@@ -2,6 +2,8 @@
     "STATES": {
         "PENDING": "Pending",
         "ACTIVE": "Active",
-        "ENDED": "Ended"
+        "ENDED": "Ended",
+        "HAS_WINNER": "HasWinner"
+
     }
 }

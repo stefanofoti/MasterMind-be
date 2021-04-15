@@ -115,6 +115,11 @@ module.exports = (fastify, opts) => {
             return reply.code(200).send({ res: 'OK', details: 'Match ended.' })
         }
 
+        // TODO
+        if (!match || match.status === costants.STATES.HAS_WINNER) {
+            return reply.code(200).send({ res: 'OK', details: 'You lost.' })
+        }
+
         const playerIndex = match.players.indexOf(body.googleId)
         const player = body.googleId
         const oppIndex = playerIndex === 0 ? 1 : 0
@@ -131,7 +136,7 @@ module.exports = (fastify, opts) => {
 
         if (result[0] === 4) {
             // player WIN!
-            match.status = ENDED
+            match.status = costants.STATES.HAS_WINNER
             match.winner = player
             match.playedBy = match.players
             match.players = []
@@ -165,7 +170,6 @@ module.exports = (fastify, opts) => {
                 {
                     playerId: opponent
                 }, update)
-
 
         }
 
