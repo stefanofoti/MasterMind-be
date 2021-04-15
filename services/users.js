@@ -14,7 +14,9 @@ module.exports = async function (fastify, opts, next) {
       body: S.object()
         .prop('token', S.string().required())
         .prop('googleId', S.string().required())
-    },
+        .prop('name', S.string().required())
+        .prop('lastname', S.string().required())
+      },
     handler: handlers.authHandler 
   })
 

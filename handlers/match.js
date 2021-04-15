@@ -19,6 +19,25 @@ module.exports = (fastify, opts) => {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
 
+        let player = await fastify.mongo.db.collection("players").findOne({
+            playerId: body.googleId
+        })
+
+        if (!player) {
+            return reply.code(400).send({ res: 'KO', details: 'Unknown player.' })
+        }
+
+        const update = {
+            $set: {
+                matchesCounter: player.matchesCounter + 1
+            }
+        }
+
+        await fastify.mongo.db.collection("players").findOneAndUpdate(
+            {
+                playerId: body.googleId
+            }, update)
+
         let lastMatch = activeMatches.length > 0 ? activeMatches[activeMatches.length - 1] : undefined
 
         const involvedMatch = activeMatches.filter(function checkPlaying(match) {
@@ -66,7 +85,7 @@ module.exports = (fastify, opts) => {
         if (!involvedMatch.length > 0) {
             return reply.code(400).send({ res: 'KO', details: 'Not involved in matchmaking.' })
         }
-        
+
         const match = involvedMatch[involvedMatch.length - 1]
 
         if (match.status !== costants.STATES.ACTIVE) {
@@ -74,7 +93,7 @@ module.exports = (fastify, opts) => {
         }
 
 
-        return reply.send({ "res": "OK", "matchId":  match.matchId, "status": match.status })
+        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status })
     }
 
     // GET -- meglio una POST con array json nel body?  risultato su match attivo
@@ -87,22 +106,70 @@ module.exports = (fastify, opts) => {
         }
 
         const match = activeMatches[body.matchId]
-        
-        if (!match || !match.status === costants.STATES.ACTIVE) {
+
+        if (!match || match.status === costants.STATES.PENDING) {
             return reply.code(400).send({ res: 'KO', details: 'Match not active.' })
         }
-        
-        const oppIndex = match.players.indexOf(body.googleId) === 0 ? 1 : 0        
+
+        if (!match || match.status === costants.STATES.ENDED) {
+            return reply.code(200).send({ res: 'OK', details: 'Match ended.' })
+        }
+
+        const playerIndex = match.players.indexOf(body.googleId)
+        const player = body.googleId
+        const oppIndex = playerIndex === 0 ? 1 : 0
+        const opponent = match.players[oppIndex]
         const oppSec = match.sec[oppIndex]
-        
+
         const result = await solver.solCompare(body.try, oppSec)
+
         match.tries.push({
             triedBy: body.googleId,
             try: body.try,
             result: result
         })
-        
-        return reply.send({ "res": "OK", "matchId":  match.matchId, "result": result })
+
+        if (result[0] === 4) {
+            // player WIN!
+            match.status = ENDED
+            match.winner = player
+            match.playedBy = match.players
+            match.players = []
+            match.details = 'Won by ' + body.googleId
+
+            const playerUpdate = {
+                $set: {
+                    winCounter: player.matchesCounter + 1
+                },
+                $push: {
+                    matches: match
+                }
+            }
+
+            const opponentUpdate = {
+                $set: {
+                    loseCounter: player.matchesCounter + 1
+                },
+                $push: {
+                    matches: match
+                }
+            }
+
+
+            await fastify.mongo.db.collection("players").findOneAndUpdate(
+                {
+                    playerId: player
+                }, update)
+
+            await fastify.mongo.db.collection("players").findOneAndUpdate(
+                {
+                    playerId: opponent
+                }, update)
+
+
+        }
+
+        return reply.send({ "res": "OK", "matchId": match.matchId, "result": result })
     }
 
     // PUT nuova partita con lo stesso giocatore
@@ -121,8 +188,8 @@ module.exports = (fastify, opts) => {
         }
 
         match.players.push(body.googleId)
-        match.status = match.players.length === 2 ? costants.STATES.ACTIVE : costants.STATES.PENDING        
-        return reply.send({ "res": "OK", "matches":  activeMatches })
+        match.status = match.players.length === 2 ? costants.STATES.ACTIVE : costants.STATES.PENDING
+        return reply.send({ "res": "OK", "matches": activeMatches })
     }
 
 
@@ -147,7 +214,7 @@ module.exports = (fastify, opts) => {
         match.winner = match.players[oppIndex]
         match.playedBy = match.players
         match.players = []
-        return reply.send({ "res": "OK", "matches":  activeMatches })
+        return reply.send({ "res": "OK", "matches": activeMatches })
     }
 
     return {
