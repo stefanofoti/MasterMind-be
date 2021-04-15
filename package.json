@@ -1,0 +1,22 @@
+{
+    "name": "macc-be",
+    "description": "Backend of Mobile Application and Cloud Computing project",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "author": "TODO",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "fastify": "^3.10.1",
+        "fastify-autoload": "^3.4.2",
+        "fastify-cli": "^2.7.0",
+        "fastify-https-redirect": "^1.0.3",
+        "fastify-mongodb": "^2.0.1",
+        "fluent-json-schema": "^2.0.4",
+        "google-auth-library": "^6.1.4",
+        "googleapis": "^70.0.0",
+        "moment": "^2.29.1"
+    }
+}

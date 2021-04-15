@@ -1,0 +1,7 @@
+{
+    "STATES": {
+        "PENDING": "Pending",
+        "ACTIVE": "Active",
+        "ENDED": "Ended"
+    }
+}
