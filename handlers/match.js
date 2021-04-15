@@ -57,7 +57,8 @@ module.exports = (fastify, opts) => {
                 sec: [body.sec],
                 matchId: activeMatches.length, //il primo match ha id 0
                 status: costants.STATES.PENDING,
-                tries: []
+                tries: [],
+                attemptsCounter: [0, 0]
             }
             activeMatches.push(lastMatch)
         } else {
@@ -108,16 +109,15 @@ module.exports = (fastify, opts) => {
         const match = activeMatches[body.matchId]
 
         if (!match || match.status === costants.STATES.PENDING) {
-            return reply.code(400).send({ res: 'KO', details: 'Match not active.' })
+            return reply.code(400).send({ res: 'KO', details: 'Match still pending.' })
         }
 
         if (!match || match.status === costants.STATES.ENDED) {
-            return reply.code(200).send({ res: 'OK', details: 'Match ended.' })
+            return reply.code(200).send({ res: 'OK', details: 'Match ended.', ...match})
         }
 
-        // TODO
         if (!match || match.status === costants.STATES.HAS_WINNER) {
-            return reply.code(200).send({ res: 'OK', details: 'You lost.' })
+            return reply.code(200).send({ res: 'OK', details: 'You lost.', ...match})
         }
 
         const playerIndex = match.players.indexOf(body.googleId)
@@ -125,6 +125,17 @@ module.exports = (fastify, opts) => {
         const oppIndex = playerIndex === 0 ? 1 : 0
         const opponent = match.players[oppIndex]
         const oppSec = match.sec[oppIndex]
+
+        if (match.attemptsCounter[playerIndex] > 7) {
+            return reply.code(200).send({ res: 'KO', details: 'No more attempts available.', ...match})
+        }
+
+        if (match.attemptsCounter[playerIndex] > 7 && match.attemptsCounter[oppIndex] > 7) {
+            // Match ended with no winner
+            return reply.code(200).send({ res: 'KO', details: 'No more attempts available.', ...match})
+        }
+
+        match.attemptsCounter[playerIndex]++
 
         const result = await solver.solCompare(body.try, oppSec)
 
@@ -186,16 +197,17 @@ module.exports = (fastify, opts) => {
         }
 
         const match = activeMatches[body.matchId]
-
         if (match.status === costants.STATES.ACTIVE) {
             return reply.code(400).send({ res: 'KO', details: 'Match still active.' })
         }
+
+        // Reinizializzare il match 
+
 
         match.players.push(body.googleId)
         match.status = match.players.length === 2 ? costants.STATES.ACTIVE : costants.STATES.PENDING
         return reply.send({ "res": "OK", "matches": activeMatches })
     }
-
 
     // DELETE termine partita
     const abortMatch = async (request, reply) => {
