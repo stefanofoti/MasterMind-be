@@ -11,8 +11,8 @@ module.exports = (fastify, opts) => {
 
     const isValid = await validator.validate(body.token)
     if (!isValid) {
-      reply.code(401).send({ res: 'KO', details: 'Unauthorized. ' })
-    }
+      return reply.code(401).send({ res: 'KO', details: 'Unauthorized. ' })
+    } 
 
     let player = await fastify.mongo.db.collection("players").findOne({
       playerId: body.googleId
@@ -51,9 +51,9 @@ module.exports = (fastify, opts) => {
     }
 
     if (player && player !== {}) {
-      reply.send({ "res": "OK", ...player })
+      return reply.send({ "res": "OK", ...player })
     } else {
-      reply.send({ "res": "KO" })
+      return reply.send({ "res": "KO" })
     }
   }
 
@@ -81,9 +81,9 @@ module.exports = (fastify, opts) => {
     )
 
     if (player && player !== {}) {
-      reply.send({ "res": "OK", ...player })
+      return reply.send({ "res": "OK", ...player })
     } else {
-      reply.send({ "res": "KO" })
+      return reply.send({ "res": "KO" })
     }
   }
 

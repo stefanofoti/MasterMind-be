@@ -9,6 +9,7 @@
         "start": "node index.js"
     },
     "dependencies": {
+        "axios": "^0.21.1",
         "fastify": "^3.10.1",
         "fastify-autoload": "^3.4.2",
         "fastify-cli": "^2.7.0",

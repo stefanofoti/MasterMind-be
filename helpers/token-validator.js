@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 var config = require('../config.json');
 
 const https = require('https')
+const axios = require('axios');
 
 
 module.exports = (fastify, opts) => {
@@ -12,7 +13,6 @@ module.exports = (fastify, opts) => {
         if (token === 'DEV1234') {
             return true
         }
-        var isValid = false
         const path = '/oauth2/v2/tokeninfo?id_token=' + token
         
         const options = {
@@ -22,19 +22,41 @@ module.exports = (fastify, opts) => {
             method: 'GET'
         }
 
-        const req = https.request(options, res => {
-            res.on('data', d => {
-                process.stdout.write(d)
-            })
-            isValid = res.statusCode === 200 ? true : false 
-        })
+        let p = new Promise(function(resolve, reject) {
+            var req = https.request(options, function(res) {
+                if (res.statusCode < 200 || res.statusCode >= 300) {
+                    return reject(new Error('statusCode=' + res.statusCode));
+                }
+                // cumulate data
+                var body = [];
+                res.on('data', function(chunk) {
+                    body.push(chunk);
+                });
+                // resolve on end
+                res.on('end', function() {
+                    try {
+                        body = JSON.parse(Buffer.concat(body).toString());
+                    } catch(e) {
+                        reject(e);
+                    }
+                    // attach status code
+                    resolve({...body, statusCode: res.statusCode});
+                });
+            });
+            // reject on request error
+            req.on('error', function(err) {
+                // This is not a "Second reject", just a different sort of failure
+                reject(err);
+            });
+            // IMPORTANT
+            req.end();
+        });
 
-        req.on('error', error => {
-            console.error(error)
-        })
-
-        req.end()
-        return isValid
+        const resp = await p
+        if (resp && resp.statusCode === 200) {
+            return true
+        }
+        return false
     }
 
     return {
