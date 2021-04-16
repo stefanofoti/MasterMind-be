@@ -1,5 +1,6 @@
 "use strict"
 
+const { gmail } = require('googleapis/build/src/apis/gmail')
 const tokenValidator = require('../helpers/token-validator')
 
 module.exports = (fastify, opts) => {
@@ -30,6 +31,7 @@ module.exports = (fastify, opts) => {
         loseCounter: 0,
         accessCounter: 1,
         firstAccess: true,
+        profilePicUri: body.profilePicUri,
         matches: []
       })
       if (player.result.ok) player = player.ops[0]
@@ -55,7 +57,38 @@ module.exports = (fastify, opts) => {
     }
   }
 
+  const getUserDetails = async (request, reply) => {
+    var query = request.query
+
+    const isValid = await validator.validate(query.token)
+    if (!isValid) {
+      return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
+    }
+
+    let player = await fastify.mongo.db.collection("players").findOne(
+      {
+        playerId: query.requestedId
+      }, {
+      playerId: 1,
+      name: 1,
+      lastname: 1,
+      matchesCounter: 1,
+      winCounter: 1,
+      loseCounter: 1,
+      accessCounter: 1,
+      profilePicUri: 1
+    }
+    )
+
+    if (player && player !== {}) {
+      reply.send({ "res": "OK", ...player })
+    } else {
+      reply.send({ "res": "KO" })
+    }
+  }
+
   return {
-    authHandler
+    authHandler,
+    getUserDetails
   }
 }

@@ -16,10 +16,22 @@ module.exports = async function (fastify, opts, next) {
         .prop('googleId', S.string().required())
         .prop('name', S.string().required())
         .prop('lastname', S.string().required())
+        .prop('profilePicUri', S.string().required())
       },
     handler: handlers.authHandler 
   })
 
+  fastify.route({
+    method: 'GET',
+    url: '/user/details',
+    schema: {
+      querystring: S.object()
+        .prop('token', S.string().required())
+        .prop('googleId', S.string().required())
+        .prop('requestedId', S.string().required())
+      },
+    handler: handlers.getUserDetails 
+  })
 
   next();
 };

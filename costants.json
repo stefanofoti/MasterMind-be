@@ -3,7 +3,8 @@
         "PENDING": "Pending",
         "ACTIVE": "Active",
         "ENDED": "Ended",
-        "HAS_WINNER": "HasWinner"
+        "HAS_WINNER": "HasWinner",
+        "DRAW": "Draw"
 
     }
 }
