@@ -4,11 +4,13 @@ const tokenValidator = require('../helpers/token-validator')
 const solutionSolver = require('../helpers/solution-solver')
 const match = require('../services/match')
 const costants = require('../costants.json')
+const rabbitmqHelper = require('../helpers/rabbitmq')
 var activeMatches = []
 
 module.exports = (fastify, opts) => {
     const validator = tokenValidator(fastify, opts)
     const solver = solutionSolver(fastify, opts)
+    const rabbitmq = rabbitmqHelper(fastify, opts)
 
     // POST
     const newMatch = async (request, reply) => {
@@ -67,7 +69,11 @@ module.exports = (fastify, opts) => {
             lastMatch.sec.push(body.sec)
             lastMatch.status = costants.STATES.ACTIVE
         }
-        return reply.send({ "res": "OK", "matchId": lastMatch.matchId })
+        
+        reply.send({ "res": "OK", "matchId": lastMatch.matchId })
+        if (lastMatch.isFull) {
+            rabbitmq.sendMessage(lastMatch.matchId.toString(), 'OK')
+        }
     }
 
     // GET polling iniziale
