@@ -19,7 +19,11 @@ amqp.connect(config.AMQP_URI, function (err, conn) {
 module.exports = (fastify, opts) => {
 
     const sendMessage = async (queueName, data) => {
-        ch.assertQueue(queueName)
+        ch.assertQueue(queueName, {
+            exclusive: false,
+            durable: false,
+            autoDelete: true
+        })
         ch.sendToQueue(queueName, Buffer.from(data))
     }
 

@@ -59,7 +59,7 @@ module.exports = (fastify, opts) => {
                 sec: [body.sec],
                 matchId: activeMatches.length, //il primo match ha id 0
                 status: costants.STATES.PENDING,
-                tries: [],
+                roundBids: [],
                 attemptsCounter: [0, 0]
             }
             activeMatches.push(lastMatch)
@@ -137,11 +137,11 @@ module.exports = (fastify, opts) => {
 
         match.attemptsCounter[playerIndex]++
 
-        const result = await solver.solCompare(body.try, oppSec)
+        const result = await solver.solCompare(body.roundBid, oppSec)
 
-        match.tries.push({
+        match.roundBids.push({
             triedBy: body.googleId,
-            try: body.try,
+            roundBid: body.roundBid,
             result: result
         })
 
@@ -227,6 +227,7 @@ module.exports = (fastify, opts) => {
 
     // DELETE termine partita
     const abortMatch = async (request, reply) => {
+        // TODO delete rabbitmq queue
         var body = request.body
 
         const isValid = await validator.validate(body.token)

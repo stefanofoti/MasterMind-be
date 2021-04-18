@@ -27,7 +27,7 @@ module.exports = async function (fastify, opts, next) {
         .prop('token', S.string().required())
         .prop('googleId', S.string().required())
         .prop('matchId', S.integer().required())
-        .prop('try', S.array().minItems(4).maxItems(4).items(S.number().minimum(0).maximum(7)).required())
+        .prop('roundBid', S.array().minItems(4).maxItems(4).items(S.number().minimum(0).maximum(7)).required())
     },
     handler: handlers.computeResult 
   })
