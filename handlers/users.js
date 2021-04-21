@@ -68,7 +68,7 @@ module.exports = (fastify, opts) => {
       return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
     }
 
-    var jwtToken = validator.generateAccessToken(body.googleId)
+    var jwtToken = validator.generateAccessToken(query.googleId)
 
     let player = await fastify.mongo.db.collection("players").findOne(
       {

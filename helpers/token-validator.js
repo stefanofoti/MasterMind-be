@@ -67,7 +67,7 @@ module.exports = (fastify, opts) => {
     const validate = function (token, userId) {
         try {
             var decoded = jwt.verify(token, config.TOKEN_SECRET)
-            if (decoded.data === userId) {
+            if (decoded.data === userId.replace("%40", "@")) {
                 return true
             }    
         } catch(err) {
