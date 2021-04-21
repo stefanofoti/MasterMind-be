@@ -16,7 +16,7 @@ module.exports = (fastify, opts) => {
     const newMatch = async (request, reply) => {
         var body = request.body
 
-        const isValid = await validator.validate(body.token)
+        const isValid = await validator.validate(body.token, body.googleId)
         if (!isValid) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
@@ -80,10 +80,12 @@ module.exports = (fastify, opts) => {
     const matchStatus = async (request, reply) => {
         var query = request.query
 
-        const isValid = await validator.validate(query.token)
+        const isValid = await validator.validate(query.token, query.googleId)
         if (!isValid) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
+
+        var jwtToken = validator.generateAccessToken(body.googleId)
 
         const match = activeMatches[query.matchId]
 
@@ -99,14 +101,14 @@ module.exports = (fastify, opts) => {
             return reply.code(400).send({ res: 'KO', details: 'Match not active.' })
         }
 
-        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "winner": match.winner })
+        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "winner": match.winner, "token": jwtToken })
     }
 
     // POST con array json nel body?  risultato su match attivo
     const computeResult = async (request, reply) => {
         var body = request.body
 
-        const isValid = await validator.validate(body.token)
+        const isValid = await validator.validate(body.token, body.googleId)
         if (!isValid) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
@@ -208,7 +210,7 @@ module.exports = (fastify, opts) => {
     const playAgain = async (request, reply) => {
         var body = request.body
 
-        const isValid = await validator.validate(body.token)
+        const isValid = await validator.validate(body.token, body.googleId)
         if (!isValid) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
@@ -230,7 +232,7 @@ module.exports = (fastify, opts) => {
         // TODO delete rabbitmq queue
         var body = request.body
 
-        const isValid = await validator.validate(body.token)
+        const isValid = await validator.validate(body.token, body.googleId)
         if (!isValid) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }

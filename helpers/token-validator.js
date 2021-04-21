@@ -5,11 +5,12 @@ var config = require('../config.json');
 
 const https = require('https')
 const axios = require('axios');
+var jwt = require('jsonwebtoken');
 
 
 module.exports = (fastify, opts) => {
 
-    const validate = async (token) => {
+    const validateGoogleToken = async (token, googleId) => {
         if (token === 'DEV1234') {
             return true
         }
@@ -59,7 +60,27 @@ module.exports = (fastify, opts) => {
         return false
     }
 
+    const generateAccessToken = function (userId) {
+        return jwt.sign({ data: userId }, config.TOKEN_SECRET, { expiresIn: "1h" });
+    }
+
+    const validate = function (token, userId) {
+        try {
+            var decoded = jwt.verify(token, config.TOKEN_SECRET)
+            if (decoded.data === userId) {
+                return true
+            }    
+        } catch(err) {
+            // token expired or not valid
+            return false
+        }
+        // the token is valid, but does not belong to the given userId
+        return false
+    }
+
     return {
+        validateGoogleToken,
+        generateAccessToken,
         validate
     }
 }

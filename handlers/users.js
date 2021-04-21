@@ -9,10 +9,15 @@ module.exports = (fastify, opts) => {
   const authHandler = async (request, reply) => {
     var body = request.body
 
-    const isValid = await validator.validate(body.token)
+    const isValid = await validator.validateGoogleToken(body.token, body.googleId)
+    // const isValid = true
     if (!isValid) {
       return reply.code(401).send({ res: 'KO', details: 'Unauthorized. ' })
     } 
+
+    var jwtToken = validator.generateAccessToken(body.googleId)
+
+    // var decoded = validator.validate(jwtToken, body.googleId)
 
     let player = await fastify.mongo.db.collection("players").findOne({
       playerId: body.googleId
@@ -51,7 +56,7 @@ module.exports = (fastify, opts) => {
     }
 
     if (player && player !== {}) {
-      return reply.send({ "res": "OK", ...player })
+      return reply.send({ "res": "OK", ...player, token: jwtToken })
     } else {
       return reply.send({ "res": "KO" })
     }
@@ -60,7 +65,7 @@ module.exports = (fastify, opts) => {
   const getUserDetails = async (request, reply) => {
     var query = request.query
 
-    const isValid = await validator.validate(query.token)
+    const isValid = await validator.validate(query.token, query.googleId)
     if (!isValid) {
       return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
     }
