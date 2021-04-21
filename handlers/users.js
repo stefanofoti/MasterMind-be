@@ -17,8 +17,6 @@ module.exports = (fastify, opts) => {
 
     var jwtToken = validator.generateAccessToken(body.googleId)
 
-    // var decoded = validator.validate(jwtToken, body.googleId)
-
     let player = await fastify.mongo.db.collection("players").findOne({
       playerId: body.googleId
     })
@@ -70,6 +68,8 @@ module.exports = (fastify, opts) => {
       return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
     }
 
+    var jwtToken = validator.generateAccessToken(body.googleId)
+
     let player = await fastify.mongo.db.collection("players").findOne(
       {
         playerId: query.requestedId
@@ -86,7 +86,7 @@ module.exports = (fastify, opts) => {
     )
 
     if (player && player !== {}) {
-      return reply.send({ "res": "OK", ...player })
+      return reply.send({ "res": "OK", ...player, "token": jwtToken })
     } else {
       return reply.send({ "res": "KO" })
     }

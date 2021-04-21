@@ -85,8 +85,6 @@ module.exports = (fastify, opts) => {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
         }
 
-        var jwtToken = validator.generateAccessToken(body.googleId)
-
         const match = activeMatches[query.matchId]
 
         if(match && !match.players.includes(query.googleId)) {
@@ -101,7 +99,7 @@ module.exports = (fastify, opts) => {
             return reply.code(400).send({ res: 'KO', details: 'Match not active.' })
         }
 
-        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "winner": match.winner, "token": jwtToken })
+        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "winner": match.winner })
     }
 
     // POST con array json nel body?  risultato su match attivo
