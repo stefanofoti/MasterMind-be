@@ -72,8 +72,7 @@ module.exports = (fastify, opts) => {
         
         reply.send({ "res": "OK", "matchId": lastMatch.matchId })
         if (lastMatch.isFull) {
-            rabbitmq.sendMessage(lastMatch.players[0], 'OK')
-            rabbitmq.sendMessage(lastMatch.players[1], 'OK')
+            rabbitmq.sendMessage(lastMatch.players, 'OK')
         }
     }
 
