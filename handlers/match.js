@@ -43,7 +43,7 @@ module.exports = (fastify, opts) => {
         let lastMatch = activeMatches.length > 0 ? activeMatches[activeMatches.length - 1] : undefined
 
         const involvedMatch = activeMatches.filter(function checkPlaying(match) {
-            if (match.players.includes(body.googleId) && (match.status === costants.STATES.PENDING || costants.STATES.ACTIVE)) {
+            if (match.players.includes(body.googleId) && (match.status === costants.STATES.PENDING || match.status === costants.STATES.ACTIVE)) {
                 return match
             }
         })
@@ -72,6 +72,7 @@ module.exports = (fastify, opts) => {
         
         reply.send({ "res": "OK", "matchId": lastMatch.matchId })
         if (lastMatch.isFull) {
+            console.log("sending to "+lastMatch.players[0]+", "+lastMatch.players[1]+"match id = "+lastMatch.matchId)
             rabbitmq.sendMessage(lastMatch.players, 'OK')
         }
     }
