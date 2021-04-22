@@ -1,5 +1,0 @@
-{
-    "DB_URI":"mongodb+srv://maccAdmin:macc534!z@cl0.upxvm.mongodb.net/macc_dev?retryWrites=true&w=majority",
-    "AMQP_URI": "amqps://lxeyuqhp:4SNtC4aaxVInSdtendsBf3Vg--_r0B4s@hippo.rmq2.cloudamqp.com/lxeyuqhp",
-    "TOKEN_SECRET": "2a5269c830f1e5845e78ab3d8d113296212ebd83bfb67400d84304a0357ef487a9b258ade2c416048a2f8197748142303947d0164dec8c6aca64a26a340f420d"
-}
