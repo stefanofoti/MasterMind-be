@@ -73,7 +73,7 @@ module.exports = (fastify, opts) => {
         reply.send({ "res": "OK", "matchId": lastMatch.matchId })
         if (lastMatch.isFull) {
             console.log("sending to "+lastMatch.players[0]+", "+lastMatch.players[1]+"match id = "+lastMatch.matchId)
-            rabbitmq.sendMessage(lastMatch.players, 'OK')
+            rabbitmq.sendMessage(lastMatch.players, ['OK','OK'])
         }
     }
 
@@ -180,6 +180,14 @@ module.exports = (fastify, opts) => {
                 }
             }
 
+            var dest = []
+            var data = []
+            dest[playerIndex] = player
+            dest[oppIndex] = opponent
+            data[playerIndex] = 'WIN'
+            data[oppIndex] = 'LOST'
+            
+            rabbitmq.sendMessage(dest, data)
 
             await fastify.mongo.db.collection("players").findOneAndUpdate(
                 {

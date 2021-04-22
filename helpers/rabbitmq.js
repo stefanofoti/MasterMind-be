@@ -36,8 +36,8 @@ module.exports = (fastify, opts) => {
             durable: false,
             autoDelete: true
         })
-        ch.sendToQueue(queueNames[0], Buffer.from(data))
-        ch2.sendToQueue(queueNames[1], Buffer.from(data))
+        ch.sendToQueue(queueNames[0], Buffer.from(data[0]))
+        ch2.sendToQueue(queueNames[1], Buffer.from(data[1]))
     }
 
     return {
