@@ -17,11 +17,6 @@ amqp.connect(config.AMQP_URI, function (err, conn) {
     })
 })
 
-/*process.on('exit', (code) => {
-    ch.close();
-    console.log(`Closing rabbitmq channel`);
- })*/ 
-
 module.exports = (fastify, opts) => {
 
     const sendMessage = async (queueNames, data) => {

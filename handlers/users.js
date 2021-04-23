@@ -1,10 +1,12 @@
 "use strict"
 
-const { gmail } = require('googleapis/build/src/apis/gmail')
 const tokenValidator = require('../helpers/token-validator')
+const matchHelper = require('../helpers/match-helper')
+const costants = require('../costants.json')
 
 module.exports = (fastify, opts) => {
   const validator = tokenValidator(fastify, opts)
+  const hmatch = matchHelper(fastify, opts)
 
   const authHandler = async (request, reply) => {
     var body = request.body
@@ -53,8 +55,21 @@ module.exports = (fastify, opts) => {
       if (player.ok) player = player.value
     }
 
+    let activeMatchDetails = {}
+    if (query.googleId === query.requestedId) {
+      const userMatches = await hmatch.userMatches(player.playerId)
+      if (await userMatches.length > 0) {
+        const match = userMatches[0]
+        if (res.status === costants.STATES.ACTIVE) {
+          activeMatchDetails = {
+            activeMatchId: match.matchId
+          }
+        }
+      }  
+    }
+
     if (player && player !== {}) {
-      return reply.send({ "res": "OK", ...player, token: jwtToken })
+      return reply.send({ "res": "OK", ...player, token: jwtToken, ...activeMatchDetails })
     } else {
       return reply.send({ "res": "KO" })
     }
@@ -85,8 +100,21 @@ module.exports = (fastify, opts) => {
     }
     )
 
+    let activeMatchDetails = {}
+    if (query.googleId === query.requestedId) {
+      const userMatches = await hmatch.userMatches(player.playerId)
+      if (await userMatches.length > 0) {
+        const match = userMatches[0]
+        if (res.status === costants.STATES.ACTIVE) {
+          activeMatchDetails = {
+            activeMatchId: match.matchId
+          }
+        }
+      }  
+    }
+
     if (player && player !== {}) {
-      return reply.send({ "res": "OK", ...player, "token": jwtToken })
+      return reply.send({ "res": "OK", ...player, "token": jwtToken, ...activeMatchDetails })
     } else {
       return reply.send({ "res": "KO" })
     }
