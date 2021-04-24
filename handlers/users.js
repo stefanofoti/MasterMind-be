@@ -56,7 +56,7 @@ module.exports = (fastify, opts) => {
     }
 
     let activeMatchDetails = {}
-    if (query.googleId === query.requestedId) {
+    if (body.googleId === body.requestedId) {
       const userMatches = await hmatch.userMatches(player.playerId)
       if (await userMatches.length > 0) {
         const match = userMatches[0]
