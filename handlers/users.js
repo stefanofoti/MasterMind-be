@@ -56,16 +56,14 @@ module.exports = (fastify, opts) => {
     }
 
     let activeMatchDetails = {}
-    if (body.googleId === body.requestedId) {
-      const userMatches = await hmatch.userMatches(player.playerId)
-      if (await userMatches.length > 0) {
-        const match = userMatches[0]
-        if (res.status === costants.STATES.ACTIVE) {
-          activeMatchDetails = {
-            activeMatchId: match.matchId
-          }
+    const userMatches = await hmatch.userMatches(player.playerId)
+    if (await userMatches.length > 0) {
+      const match = userMatches[0]
+      if (match.status === costants.STATES.ACTIVE) {
+        activeMatchDetails = {
+          activeMatchId: match.matchId
         }
-      }  
+      }
     }
 
     if (player && player !== {}) {
@@ -105,7 +103,7 @@ module.exports = (fastify, opts) => {
       const userMatches = await hmatch.userMatches(player.playerId)
       if (await userMatches.length > 0) {
         const match = userMatches[0]
-        if (res.status === costants.STATES.ACTIVE) {
+        if (match.status === costants.STATES.ACTIVE) {
           activeMatchDetails = {
             activeMatchId: match.matchId
           }
