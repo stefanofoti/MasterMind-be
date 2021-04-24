@@ -118,6 +118,8 @@ module.exports = (fastify, opts) => {
         
             match.players = []
 
+            await rabbitmq.sendMessage([match.winner], ['ABORTED'])
+
         } else if (match.status === costants.STATES.PENDING) {
             match.status = costants.STATES.ENDED
         }
