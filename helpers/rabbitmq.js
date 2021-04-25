@@ -26,13 +26,17 @@ module.exports = (fastify, opts) => {
             durable: false,
             autoDelete: true
         })
-        ch2.assertQueue(queueNames[1], {
-            exclusive: false,
-            durable: false,
-            autoDelete: true
-        })
+        if(queueNames.length == 2) {
+            ch2.assertQueue(queueNames[1], {
+                exclusive: false,
+                durable: false,
+                autoDelete: true
+            })    
+        }
         ch.sendToQueue(queueNames[0], Buffer.from(data[0]))
-        ch2.sendToQueue(queueNames[1], Buffer.from(data[1]))
+        if(queueNames.length == 2) {
+            ch2.sendToQueue(queueNames[1], Buffer.from(data[1]))
+        }
     }
 
     return {
