@@ -62,10 +62,10 @@ module.exports = (fastify, opts) => {
         var tries = []
         var replies = []
 
-        match.roundBids.array.forEach(element => {
+        match.roundBids.forEach(entry => {
             if (entry.triedBy === googleId) {
                 tries.push(entry.roundBid)
-                replies.push(entry.resul)
+                replies.push(entry.result)
             }
         })
 
