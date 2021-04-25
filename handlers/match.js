@@ -69,7 +69,11 @@ module.exports = (fastify, opts) => {
             }
         })
 
-        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "tries": tries, "replies": replies })
+        const playerIndex = match.players.indexOf(googleId)
+        const oppIndex = playerIndex === 0 ? 1 : 0
+
+        console.log("returning match with status: " + match.status)
+        return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, "tries": tries, "replies": replies, "opponent": match.players[oppIndex] })
     }
 
     // POST con array json nel body?  risultato su match attivo

@@ -63,7 +63,7 @@ module.exports = (fastify, opts) => {
 
         if (lastMatch.isFull) {
             console.log("sending to "+lastMatch.players[0]+", "+lastMatch.players[1]+"match id = "+lastMatch.matchId)
-            rabbitmq.sendMessage(lastMatch.players, ['OK','OK'])
+            rabbitmq.sendMessage(lastMatch.players, [lastMatch.players[1], lastMatch.players[0]])
         }
 
         return lastMatch
