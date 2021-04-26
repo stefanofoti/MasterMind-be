@@ -63,7 +63,8 @@ module.exports = (fastify, opts) => {
 
         if (lastMatch.isFull) {
             console.log("sending to "+lastMatch.players[0]+", "+lastMatch.players[1]+"match id = "+lastMatch.matchId)
-            rabbitmq.sendMessage(lastMatch.players, [lastMatch.players[1], lastMatch.players[0]])
+            const data = [{content:lastMatch.players[1], type: 'id'}, {content:lastMatch.players[0], type: 'id'}]
+            rabbitmq.sendMessage(lastMatch.players, data)
         }
 
         return lastMatch
@@ -118,7 +119,9 @@ module.exports = (fastify, opts) => {
         
             match.players = []
 
-            await rabbitmq.sendMessage([match.winner], ['ABORTED'])
+            const data = [{content: 'ABORTED', type: 'status'}]
+
+            await rabbitmq.sendMessage([match.winner], data)
 
         } else if (match.status === costants.STATES.PENDING) {
             match.status = costants.STATES.ENDED
@@ -183,14 +186,16 @@ module.exports = (fastify, opts) => {
                 }
             }
 
-            var dest = []
+            /*var dest = []
             var data = []
             dest[playerIndex] = player
             dest[oppIndex] = opponent
             data[playerIndex] = 'WIN'
             data[oppIndex] = 'LOST'
-            
-            rabbitmq.sendMessage(dest, data)
+            */
+            const data = [{content:'LOST', type: 'status'}]
+
+            rabbitmq.sendMessage([opponent], data)
 
             await fastify.mongo.db.collection("players").findOneAndUpdate(
                 {
@@ -210,7 +215,8 @@ module.exports = (fastify, opts) => {
                 match.winner = undefined
                 match.playedBy = match.players
                 match.details = 'No winner'
-                rabbitmq.sendMessage(lastMatch.players, [costants.STATES.DRAW, costants.STATES.DRAW])
+                const data = {content: 'DRAW', type: 'status'}
+                rabbitmq.sendMessage(match.players, [data, data])
                 answer.status = match.status
             }
 

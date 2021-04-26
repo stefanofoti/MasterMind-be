@@ -61,7 +61,7 @@ module.exports = (fastify, opts) => {
     const sendMessage = async (queueNames, data) => {
         for (let index = 0; index < queueNames.length; index++) {
             const q = queueNames[index]
-            const msg = data[index]
+            const msg = JSON.stringify(data[index])
             publish(q, msg)
         }
         /*
