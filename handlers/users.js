@@ -35,6 +35,8 @@ module.exports = (fastify, opts) => {
         winCounter: 0,
         loseCounter: 0,
         accessCounter: 1,
+        lastStreak: 0,
+        maxStreak: 0,
         firstAccess: true,
         profilePicUri: body.profilePicUri,
         matches: []

@@ -90,7 +90,9 @@ module.exports = (fastify, opts) => {
     
             const winnerUpdate = {
                 $set: {
-                    winCounter: winnerDb.winCounter + 1
+                    winCounter: winnerDb.winCounter + 1,
+                    lastStreak: winnerDb.lastStreak + 1,
+                    maxStreak: Math.max(winnerDb.lastStreak+1, winnerDb.maxStreak)
                 },
                 $push: {
                     matches: match
@@ -99,7 +101,8 @@ module.exports = (fastify, opts) => {
     
             const loserUpdate = {
                 $set: {
-                    loseCounter: loserDb.loseCounter + 1
+                    loseCounter: loserDb.loseCounter + 1,
+                    lastStreak: 0
                 },
                 $push: {
                     matches: match
@@ -170,7 +173,9 @@ module.exports = (fastify, opts) => {
 
             const playerUpdate = {
                 $set: {
-                    winCounter: playerDb.winCounter + 1
+                    winCounter: playerDb.winCounter + 1,
+                    lastStreak: playerDb.lastStreak + 1,
+                    maxStreak: Math.max(playerDb.lastStreak+1, playerDb.maxStreak)
                 },
                 $push: {
                     matches: match
@@ -179,7 +184,8 @@ module.exports = (fastify, opts) => {
 
             const opponentUpdate = {
                 $set: {
-                    loseCounter: opponentDb.loseCounter + 1
+                    loseCounter: opponentDb.loseCounter + 1,
+                    lastStreak: 0,
                 },
                 $push: {
                     matches: match
