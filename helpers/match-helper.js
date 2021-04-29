@@ -224,6 +224,29 @@ module.exports = (fastify, opts) => {
                 const data = {content: 'DRAW', type: 'status'}
                 rabbitmq.sendMessage(match.players, [data, data])
                 answer.status = match.status
+                // TODO save match on db
+            } else if (match.status !== costants.STATES.HAS_WINNER && match.attemptsCounter[match.players.indexOf(googleId)] >= 8) {
+                // Player waits for opponent. Countdown starts
+                
+                function timeoutFunction(match) {
+                    console.log(`received status => ${match.status}`)
+                    if (match.status === costants.STATES.ACTIVE) {
+                        // Match ended with the timeout, so draw
+                        match.status = costants.STATES.DRAW
+                        match.winner = undefined
+                        match.details = 'No winner'
+                        match.playedBy = match.players
+                        const data = {content: 'DRAW', type: 'status'}
+                        rabbitmq.sendMessage(match.players, [data, data])
+                        // TODO save match on db
+
+                    }
+                }
+                
+                setTimeout(timeoutFunction, 30000, match);
+                const data = {content: 'TIMER_START', type: 'status'}
+                rabbitmq.sendMessage([opponent], [data])
+                answer.status = match.status
             }
 
         return answer

@@ -91,12 +91,8 @@ module.exports = (fastify, opts) => {
             return reply.code(400).send({ res: 'KO', details: 'Match still pending.' })
         }
 
-        if (!match || match.status === costants.STATES.ENDED) {
+        if (!match || match.status === costants.STATES.ENDED || match.status === costants.STATES.DRAW || match.status === costants.STATES.HAS_WINNER) {
             return reply.code(200).send({ res: 'OK', details: 'Match ended.', ...match })
-        }
-
-        if (!match || match.status === costants.STATES.HAS_WINNER) {
-            return reply.code(200).send({ res: 'OK', details: 'You lost.', ...match })
         }
 
         if (match.attemptsCounter[match.players.indexOf(body.googleId)] > 7) {
