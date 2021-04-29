@@ -30,6 +30,36 @@ module.exports = (fastify, opts) => {
     }
     )
 
+    var userMatches = []
+
+    player.matches.forEach(match => {
+      var tries = []
+      var replies = []
+
+      var opponentTries = []
+      var opponentReplies = []
+
+      match.roundBids.forEach(entry => {
+          if (entry.triedBy === googleId) {
+              tries.push(entry.roundBid)
+              replies.push(entry.result)
+          } else {
+            opponentReplies.push(entry.result)
+            opponentTries.push(entry.roundBid)
+          }
+      })
+      // todo add secrets
+      const m = {
+        tries: tries,
+        replies: replies,
+        opponentTries: opponentTries,
+        opponentReplies: opponentReplies
+      }
+      userMatches.push(m)
+    })
+
+    player.matches = userMatches
+    
     /*
     // TODO push also the active macth (if any) inside the list
     let activeMatchDetails = {}

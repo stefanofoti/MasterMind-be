@@ -3,6 +3,7 @@
 const tokenValidator = require('../helpers/token-validator')
 const costants = require('../costants.json')
 const matchHelper = require('../helpers/match-helper')
+const rabbitmq = require('../helpers/rabbitmq')
 
 module.exports = (fastify, opts) => {
     const validator = tokenValidator(fastify, opts)
@@ -51,11 +52,11 @@ module.exports = (fastify, opts) => {
             return reply.code(400).send({ res: 'KO', details: 'Match not found.' })
         }
 
-        if(match && !match.players.includes(googleId)) {
+        if (match && !match.players.includes(googleId)) {
             return reply.code(401).send({ res: 'KO', details: 'Unauthorized. Not your match.' })
         }
 
-        if(match.status === costants.STATES.HAS_WINNER || match.status === costants.STATES.DRAW) {
+        if (match.status === costants.STATES.HAS_WINNER || match.status === costants.STATES.DRAW) {
             return reply.send({ "res": "OK", "matchId": match.matchId, "status": match.status, ...match })
         }
 
@@ -101,8 +102,8 @@ module.exports = (fastify, opts) => {
 
         const answer = await hmatch.newRound(body.googleId, body.matchId, body.roundBid)
 
-        if(answer.status == costants.STATES.DRAW) {
-            return reply.send({ "res": "OK", ...match })            
+        if (answer.status == costants.STATES.DRAW) {
+            return reply.send({ "res": "OK", ...match })
         }
 
         return reply.send({ "res": "OK", "matchId": match.matchId, "result": answer.result })
@@ -123,9 +124,16 @@ module.exports = (fastify, opts) => {
             return reply.code(400).send({ res: 'KO', details: 'Match still active.' })
         }
 
-        // Reinizializzare il match 
         match.players.push(body.googleId)
-        match.status = match.players.length === 2 ? costants.STATES.ACTIVE : costants.STATES.PENDING
+        
+        match.sec.push(body.sec)
+
+        if (match.sec.length === 2) {
+            match.status = costants.STATES.ACTIVE
+            const data = {content: 'REMATCH_ACTIVE', type: 'status'}
+            rabbitmq.sendMessage(match.players, [data, data])
+        }
+        
         return reply.send({ "res": "OK" })
     }
 
@@ -146,10 +154,43 @@ module.exports = (fastify, opts) => {
         }
 
         const res = hmatch.abortMatch(body.googleId, body.matchId)
-        if(res) {
+        if (res) {
             return reply.send({ "res": "OK" })
         }
         return reply.code(500).send({ "res": "KO", details: 'Generic error.' })
+    }
+
+    // POST
+    const rematch = async (request, reply) => {
+        var body = request.body
+
+        const isValid = await validator.validate(body.token, body.googleId)
+        if (!isValid) {
+            return reply.code(401).send({ res: 'KO', details: 'Unauthorized.' })
+        }
+
+        const match = hmatch.getMatchById(body.matchId)
+
+        if(match.status === costants.STATES.PENDING || match.status === costants.STATES.ACTIVE) {
+            return reply.code(400).send({ res: 'KO', details: 'Can not rematch.' })
+        }
+
+        if(!match.wantsRematch) {
+            match.wantsRematch = []
+        }
+        if(!match.wantsRematch.includes(body.googleId)) {
+            match.wantsRematch.push(body.googleId)
+        }
+        if(match.wantsRematch.length === 2) {
+            const data = {content: 'REMATCH_OK', type: 'status'}
+            rabbitmq.sendMessage(match.players, [data, data])
+            match.sec = []
+            match.roundBids = []
+            match.players = []
+            match.attemptsCounter = [0,0]
+            match.status = costants.STATES.PENDING
+        }
+        return reply.send( { res: 'OK', details: 'Rematch pending' } )
     }
 
     return {
@@ -157,6 +198,7 @@ module.exports = (fastify, opts) => {
         matchStatus,
         computeResult,
         playAgain,
-        abortMatch
+        abortMatch,
+        rematch
     }
 }

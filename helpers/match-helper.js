@@ -120,8 +120,6 @@ module.exports = (fastify, opts) => {
                     playerId: googleId
                 }, loserUpdate)
         
-            match.players = []
-
             const data = [{content: 'ABORTED', type: 'status'}]
 
             await rabbitmq.sendMessage([match.winner], data)

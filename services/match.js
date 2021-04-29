@@ -52,6 +52,7 @@ module.exports = async function (fastify, opts, next) {
         .prop('token', S.string().required())
         .prop('googleId', S.string().required())
         .prop('matchId', S.integer().required())
+        .prop('sec', S.array().minItems(4).maxItems(4).items(S.number().minimum(0).maximum(7)).required())
     },
     handler: handlers.matchStatus 
   })
@@ -68,6 +69,17 @@ module.exports = async function (fastify, opts, next) {
     handler: handlers.abortMatch 
   })
 
+  fastify.route({
+    method: 'POST',
+    url: '/match/rematch',
+    schema: {
+      body: S.object()
+        .prop('token', S.string().required())
+        .prop('googleId', S.string().required())
+        .prop('matchId', S.integer().required())
+    },
+    handler: handlers.rematch 
+  })
 
   next();
 };
