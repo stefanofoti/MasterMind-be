@@ -3,11 +3,12 @@
 const tokenValidator = require('../helpers/token-validator')
 const costants = require('../costants.json')
 const matchHelper = require('../helpers/match-helper')
-const rabbitmq = require('../helpers/rabbitmq')
+const rabbitmqHelper = require('../helpers/rabbitmq')
 
 module.exports = (fastify, opts) => {
     const validator = tokenValidator(fastify, opts)
     const hmatch = matchHelper(fastify, opts)
+    const rabbitmq = rabbitmqHelper(fastify, opts)
 
     // POST
     const newMatch = async (request, reply) => {
@@ -183,11 +184,12 @@ module.exports = (fastify, opts) => {
         }
         if(match.wantsRematch.length === 2) {
             const data = {content: 'REMATCH_OK', type: 'status'}
-            rabbitmq.sendMessage(match.players, [data, data])
+            rabbitmq.sendMessage(match.wantsRematch, [data, data])
             match.sec = []
             match.roundBids = []
             match.players = []
             match.attemptsCounter = [0,0]
+            match.wantsRematch = []
             match.status = costants.STATES.PENDING
         }
         return reply.send( { res: 'OK', details: 'Rematch pending' } )

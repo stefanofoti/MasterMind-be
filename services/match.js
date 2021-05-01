@@ -54,7 +54,7 @@ module.exports = async function (fastify, opts, next) {
         .prop('matchId', S.integer().required())
         .prop('sec', S.array().minItems(4).maxItems(4).items(S.number().minimum(0).maximum(7)).required())
     },
-    handler: handlers.matchStatus 
+    handler: handlers.playAgain
   })
 
   fastify.route({
