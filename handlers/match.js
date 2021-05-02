@@ -29,7 +29,9 @@ module.exports = (fastify, opts) => {
 
         const involvedMatch = await hmatch.userMatches(body.googleId)
 
-        if (involvedMatch.length > 0) {
+        if (involvedMatch.length > 0 && involvedMatch[involvedMatch.length-1].status === costants.STATES.PENDING) {
+            return reply.send({ "res": "OK", "matchId": involvedMatch[involvedMatch.length-1].matchId })            
+        } else if (involvedMatch.length > 0) {
             return reply.code(400).send({ res: 'KO', details: 'Already playing.', involvedMatch: involvedMatch })
         }
 
@@ -192,6 +194,22 @@ module.exports = (fastify, opts) => {
             match.wantsRematch = []
             match.status = costants.STATES.PENDING
         }
+
+        function timeoutFunction(match) {
+            console.log(`received status => ${match.status}`)            
+            if (match.wantsRematch.length === 1) {
+                // No rematch req received by opponent!
+                match.status = costants.STATES.ENDED
+                match.winner = undefined
+                match.details = undefined
+                const data = {content: 'REMATCH_REFUSED', type: 'status'}
+                rabbitmq.sendMessage(match.wantsRematch, [data])
+            }
+        }
+        if(match.wantsRematch.length === 1) {
+            setTimeout(timeoutFunction, 5000, match)
+        }   
+
         return reply.send( { res: 'OK', details: 'Rematch pending' } )
     }
 
