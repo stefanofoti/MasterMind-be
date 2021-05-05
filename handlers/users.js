@@ -47,7 +47,8 @@ module.exports = (fastify, opts) => {
         $set: {
           lastSeenOn: new Date(),
           accessCounter: player.accessCounter + 1,
-          firstAccess: false
+          firstAccess: false,
+          profilePicUri: body.profilePicUri
         }
       }
 

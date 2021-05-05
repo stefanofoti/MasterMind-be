@@ -1,6 +1,7 @@
 "use strict"
 
 const tokenValidator = require('../helpers/token-validator')
+const costants = require('../costants.json')
 
 module.exports = (fastify, opts) => {
   const validator = tokenValidator(fastify, opts)
@@ -26,13 +27,17 @@ module.exports = (fastify, opts) => {
         loseCounter: 1,
         accessCounter: 1,
         lastStreak: 1,
-        maxStreak: 1
+        maxStreak: 1,
+        winner: 1
     }
     )
 
     var userMatches = []
 
-    player.matches.forEach(match => {
+    player.matches.reverse()
+    const lastMatches = player.matches.slice(0,player.matches.length > costants.HISTORY_SIZE ? costants.HISTORY_SIZE: player.matches.length) 
+
+    for(const match of lastMatches) {
       var tries = []
       var replies = []
 
@@ -49,14 +54,36 @@ module.exports = (fastify, opts) => {
           }
       })
       // todo add secrets
+
+      const playerIndex = match.players.indexOf(googleId)
+      const oppIndex = playerIndex === 0 ? 1 : 0
+      const oppId = match.players[oppIndex]
+      console.log("opponent is " + oppId + ", idx=" + oppIndex + "myIndex=" + playerIndex + "my id: " + googleId + "players: "+match.players[0] + ", "+ match.players[1])
+
+      let opponent = await fastify.mongo.db.collection("players").findOne(
+        {
+            playerId: oppId
+        },
+        {
+            playerId: 1,
+            name: 1,
+            profilePicUri: 1
+        })
+
       const m = {
+        status: match.status,
+        opponentId: opponent.playerId,
+        opponentName: opponent.name,
+        opponentPic: opponent.profilePicUri,
         tries: tries,
         replies: replies,
         opponentTries: opponentTries,
-        opponentReplies: opponentReplies
+        opponentReplies: opponentReplies,
+        winner: match.winner,
+        heldOn: match.heldOn
       }
       userMatches.push(m)
-    })
+    }
 
     player.matches = userMatches
     

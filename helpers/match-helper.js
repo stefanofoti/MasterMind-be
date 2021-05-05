@@ -59,6 +59,7 @@ module.exports = (fastify, opts) => {
             lastMatch.players.push(googleId)
             lastMatch.sec.push(sec)
             lastMatch.status = costants.STATES.ACTIVE
+            lastMatch.heldOn = new Date()
         }
 
         if (lastMatch.isFull) {
