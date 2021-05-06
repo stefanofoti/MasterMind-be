@@ -184,7 +184,27 @@ module.exports = (fastify, opts) => {
         if(!match.wantsRematch.includes(body.googleId)) {
             match.wantsRematch.push(body.googleId)
         }
-        if(match.wantsRematch.length === 2) {
+
+        function timeoutFunction(match) {
+            console.log(`received status => ${match.status}`)            
+            if (match.wantsRematch.length === 1) {
+                // No rematch req received by opponent!
+                match.status = costants.STATES.ENDED
+                match.winner = undefined
+                match.details = undefined
+                const data = {content: 'REMATCH_TIMEOUT', type: 'status'}
+                rabbitmq.sendMessage(match.wantsRematch, [data])
+            }
+        }
+        if(match.wantsRematch.length === 1) {
+            const data = {content: 'REMATCH_REQ', type: 'status'}
+            const playerIndex = match.players.indexOf(match.wantsRematch[0])
+            const oppIndex = playerIndex === 0 ? 1 : 0
+            rabbitmq.sendMessage([match.players[oppIndex]], [data])
+            setTimeout(timeoutFunction, 5000, match)
+        }
+
+        if(match.wantsRematch.length === 2 && match.status != costants.STATES.ENDED) {
             const data = {content: 'REMATCH_OK', type: 'status'}
             rabbitmq.sendMessage(match.wantsRematch, [data, data])
             match.sec = []
@@ -194,21 +214,6 @@ module.exports = (fastify, opts) => {
             match.wantsRematch = []
             match.status = costants.STATES.PENDING
         }
-
-        function timeoutFunction(match) {
-            console.log(`received status => ${match.status}`)            
-            if (match.wantsRematch.length === 1) {
-                // No rematch req received by opponent!
-                match.status = costants.STATES.ENDED
-                match.winner = undefined
-                match.details = undefined
-                const data = {content: 'REMATCH_REFUSED', type: 'status'}
-                rabbitmq.sendMessage(match.wantsRematch, [data])
-            }
-        }
-        if(match.wantsRematch.length === 1) {
-            setTimeout(timeoutFunction, 5000, match)
-        }   
 
         return reply.send( { res: 'OK', details: 'Rematch pending' } )
     }

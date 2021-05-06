@@ -35,13 +35,12 @@ module.exports = (fastify, opts) => {
                 durable: false,
                 autoDelete: true
             })
-            console.log(queue)
             ch.purgeQueue(q).catch(function(err) {});
             return queue
         }).then(function(ok) {
             return ch.sendToQueue(q, Buffer.from(msg),{noAck:true});
         }).then(function(ok) {
-            console.log('MESSAGE_SENT', ok);
+            console.log('MESSAGE_SENT', msg);
             return ok; //resolve('MESSAGE_SENT')
         })
         /*.then((ok)=>{
