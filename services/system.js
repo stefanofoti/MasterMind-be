@@ -13,5 +13,11 @@ module.exports = async function (fastify, opts, next) {
     handler: handlers.getMatches 
   })
 
+  fastify.route({
+    method: 'GET',
+    url: '/system/reset',
+    handler: handlers.resetMatches 
+})
+
   next();
 };

@@ -21,6 +21,7 @@ module.exports = (fastify, opts) => {
     }
 
     return {
-        getMatches
+        getMatches,
+        resetMatches
     }
 }
