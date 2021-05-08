@@ -13,6 +13,13 @@ module.exports = (fastify, opts) => {
         })
     }
 
+    const resetMatches = async (request, reply) => {
+        matchHelper.activeMatches = []
+        return reply.send({
+            res: 'OK'
+        })
+    }
+
     return {
         getMatches
     }
