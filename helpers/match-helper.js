@@ -236,6 +236,7 @@ module.exports = (fastify, opts) => {
         abortMatch,
         newRound,
         userMatches,
-        newMatch
+        newMatch,
+        activeMatches
     }
 }
