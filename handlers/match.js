@@ -29,7 +29,7 @@ module.exports = (fastify, opts) => {
 
         const involvedMatch = await hmatch.userMatches(body.googleId)
 
-        if (involvedMatch.length > 0 && involvedMatch[involvedMatch.length-1].status === costants.STATES.PENDING) {
+        if (involvedMatch.length > 0 && involvedMatch[involvedMatch.length-1].status === costants.STATES.PENDING && !involvedMatch[involvedMatch.length-1].isFull) {
             return reply.send({ "res": "OK", "matchId": involvedMatch[involvedMatch.length-1].matchId })            
         } else if (involvedMatch.length > 0) {
             return reply.code(400).send({ res: 'KO', details: 'Already playing.', involvedMatch: involvedMatch })
