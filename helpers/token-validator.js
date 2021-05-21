@@ -11,9 +11,6 @@ var jwt = require('jsonwebtoken');
 module.exports = (fastify, opts) => {
 
     const validateGoogleToken = async (token, googleId) => {
-        if (token === 'DEV1234') {
-            return true
-        }
         const path = '/oauth2/v2/tokeninfo?id_token=' + token
         
         const options = {
@@ -54,7 +51,7 @@ module.exports = (fastify, opts) => {
         });
 
         const resp = await p
-        if (resp && resp.statusCode === 200) {
+        if (resp && resp.statusCode === 200 && resp.email === googleId) {
             return true
         }
         return false
