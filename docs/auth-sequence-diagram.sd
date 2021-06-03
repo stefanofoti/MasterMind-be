@@ -1,0 +1,16 @@
+title Mastermind authentication
+
+participant App
+participant GAuth
+
+participant BE
+participant GServices
+
+App->GAuth:Sign in request
+GAuth->App:Response containing gtoken
+note over App,GAuth:Response and auth request contain gtoken
+App->BE:Auth request
+BE-> GServices: Validate gtoken
+BE<- GServices: Response
+BE->BE: sign JWT
+BE->App: Response containing JWT & user details
